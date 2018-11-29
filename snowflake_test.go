@@ -1,20 +1,12 @@
 package xid
 
 import (
+	"fmt"
 	"testing"
 )
 
-func TestSnowFlake_GetId(t *testing.T) {
-	var sf, _ = NewSnowFlake()
-
-	for i := 0; i < 10000000; i++ {
-		sf.Next()
-	}
-}
-
-func BenchmarkNewSnowFlake(b *testing.B) {
-	var sf, _ = NewSnowFlake(WithDataCenter(1), WithMachine(1))
-	for i := 0; i < b.N; i++ {
-		sf.Next()
+func TestSnowFlake_Next(t *testing.T) {
+	for i := 0; i < 100000; i++ {
+		fmt.Println(Next())
 	}
 }

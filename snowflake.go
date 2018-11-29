@@ -1,8 +1,8 @@
 package xid
 
 import (
+	"errors"
 	"fmt"
-	"github.com/smartwalle/errors"
 	"sync"
 	"time"
 )
@@ -16,11 +16,12 @@ const (
 	kMaxDataCenter int64 = -1 ^ (-1 << kDataCenterBits) // 数据中心最大值，用于防止溢出
 	kMaxWorker     int64 = -1 ^ (-1 << kWorkerBits)     // 机器标识最大值，用于防止溢出
 
-	kTimeShift       uint8 = kDataCenterBits + kWorkerBits + kSequenceBits // 时间戳向左的偏移量
-	kDataCenterShift uint8 = kWorkerBits + kSequenceBits                   // 数据中心向左的偏移量
-	kMachineShift    uint8 = kSequenceBits                                 // 机器标识向左的偏移量
+	kTimeShift       = kDataCenterBits + kWorkerBits + kSequenceBits // 时间戳向左的偏移量
+	kDataCenterShift = kWorkerBits + kSequenceBits                   // 数据中心向左的偏移量
+	kMachineShift    = kSequenceBits                                 // 机器标识向左的偏移量
 )
 
+// --------------------------------------------------------------------------------
 type Option interface {
 	Apply(*SnowFlake) error
 }
@@ -34,7 +35,7 @@ func (f optionFunc) Apply(s *SnowFlake) error {
 func WithDataCenter(dataCenter int64) Option {
 	return optionFunc(func(s *SnowFlake) error {
 		if dataCenter < 0 || dataCenter > kMaxDataCenter {
-			return errors.New(fmt.Sprintf("datacenter Id can't be greater than %d or less than 0", kMaxDataCenter))
+			return errors.New(fmt.Sprintf("data center can't be greater than %d or less than 0", kMaxDataCenter))
 		}
 		s.dataCenter = dataCenter
 		return nil
@@ -44,7 +45,7 @@ func WithDataCenter(dataCenter int64) Option {
 func WithMachine(machine int64) Option {
 	return optionFunc(func(s *SnowFlake) error {
 		if machine < 0 || machine > kMaxWorker {
-			return errors.New(fmt.Sprintf("worker Id can't be greater than %d or less than 0", kMaxWorker))
+			return errors.New(fmt.Sprintf("worker can't be greater than %d or less than 0", kMaxWorker))
 		}
 
 		s.machine = machine
@@ -59,6 +60,7 @@ func WithTimeOffset(offset time.Duration) Option {
 	})
 }
 
+// --------------------------------------------------------------------------------
 type SnowFlake struct {
 	mu           sync.Mutex
 	milliseconds int64 // 上一次生成 id 的时间戳（毫秒）
@@ -117,4 +119,11 @@ func (this *SnowFlake) getNextMilliseconds() int64 {
 
 func (this *SnowFlake) getMilliseconds() int64 {
 	return time.Now().UnixNano() / 1e6
+}
+
+// --------------------------------------------------------------------------------
+var defaultSnowFlake, _ = NewSnowFlake()
+
+func Next() int64 {
+	return defaultSnowFlake.Next()
 }
