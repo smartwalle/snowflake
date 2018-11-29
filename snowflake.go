@@ -47,7 +47,6 @@ func WithMachine(machine int64) Option {
 		if machine < 0 || machine > kMaxWorker {
 			return errors.New(fmt.Sprintf("worker can't be greater than %d or less than 0", kMaxWorker))
 		}
-
 		s.machine = machine
 		return nil
 	})
