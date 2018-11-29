@@ -69,7 +69,7 @@ type SnowFlake struct {
 	timeOffset   int64
 }
 
-func NewSnowFlake(opts ...Option) (*SnowFlake, error) {
+func New(opts ...Option) (*SnowFlake, error) {
 	var sf = &SnowFlake{}
 	sf.milliseconds = 0
 	sf.sequence = 0
@@ -121,7 +121,7 @@ func (this *SnowFlake) getMilliseconds() int64 {
 }
 
 // --------------------------------------------------------------------------------
-var defaultSnowFlake, _ = NewSnowFlake()
+var defaultSnowFlake, _ = New()
 
 func Next() int64 {
 	return defaultSnowFlake.Next()
