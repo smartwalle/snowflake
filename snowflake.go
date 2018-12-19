@@ -1,4 +1,4 @@
-package xid
+package snowflake
 
 import (
 	"errors"
