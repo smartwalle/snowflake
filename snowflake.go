@@ -84,19 +84,13 @@ func New(opts ...Option) (*SnowFlake, error) {
 	sf.dataCenter = 0
 	sf.machine = 0
 
-	if err := sf.Option(opts...); err != nil {
-		return nil, err
-	}
-	return sf, nil
-}
-
-func (this *SnowFlake) Option(opts ...Option) (err error) {
+	var err error
 	for _, opt := range opts {
-		if err = opt.Apply(this); err != nil {
-			return err
+		if err = opt.Apply(sf); err != nil {
+			return nil, err
 		}
 	}
-	return nil
+	return sf, nil
 }
 
 func (this *SnowFlake) Next() int64 {
@@ -160,8 +154,4 @@ var defaultSnowFlake, _ = New()
 
 func Next() int64 {
 	return defaultSnowFlake.Next()
-}
-
-func Default() *SnowFlake {
-	return defaultSnowFlake
 }
