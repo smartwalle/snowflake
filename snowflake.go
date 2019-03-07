@@ -12,9 +12,9 @@ const (
 	kDataCenterBits uint8 = 5  // 数据中心占用的位数
 	kWorkerBits     uint8 = 5  // 机器标识占用的位数
 
-	kMaxSequence   int64 = -1 ^ (-1 << kSequenceBits)   // 序列号最大值，用于防止溢出
-	kMaxDataCenter int64 = -1 ^ (-1 << kDataCenterBits) // 数据中心最大值，用于防止溢出
-	kMaxWorker     int64 = -1 ^ (-1 << kWorkerBits)     // 机器标识最大值，用于防止溢出
+	kMaxSequence   int64 = -1 ^ (-1 << kSequenceBits)   // 序列号最大值，用于防止溢出   0-4095
+	kMaxDataCenter int64 = -1 ^ (-1 << kDataCenterBits) // 数据中心最大值，用于防止溢出 0-31
+	kMaxWorker     int64 = -1 ^ (-1 << kWorkerBits)     // 机器标识最大值，用于防止溢出 0-31
 
 	kTimeShift       = kDataCenterBits + kWorkerBits + kSequenceBits // 时间戳向左的偏移量
 	kDataCenterShift = kWorkerBits + kSequenceBits                   // 数据中心向左的偏移量
@@ -52,26 +52,30 @@ func WithMachine(machine int64) Option {
 	})
 }
 
-func WithTimeOffset(offset time.Duration) Option {
+// WithTimeOffset offset 值为 millisecond
+func WithTimeOffset(t time.Time) Option {
 	return optionFunc(func(s *SnowFlake) error {
-		s.timeOffset = int64(offset)
+		if t.IsZero() {
+			return nil
+		}
+		s.timeOffset = t.UnixNano() / 1e6
 		return nil
 	})
 }
 
 // --------------------------------------------------------------------------------
 type SnowFlake struct {
-	mu           sync.Mutex
-	milliseconds int64 // 上一次生成 id 的时间戳（毫秒）
-	dataCenter   int64 // 数据中心 id
-	machine      int64 // 机器标识 id
-	sequence     int64 // 当前毫秒已经生成的 id 序列号 (从0开始累加) 1毫秒内最多生成 4096 个 id
-	timeOffset   int64
+	mu          sync.Mutex
+	millisecond int64 // 上一次生成 id 的时间戳（毫秒）
+	dataCenter  int64 // 数据中心 id
+	machine     int64 // 机器标识 id
+	sequence    int64 // 当前毫秒已经生成的 id 序列号 (从0开始累加) 1毫秒内最多生成 4096 个 id
+	timeOffset  int64
 }
 
 func New(opts ...Option) (*SnowFlake, error) {
 	var sf = &SnowFlake{}
-	sf.milliseconds = 0
+	sf.millisecond = 0
 	sf.sequence = 0
 	sf.timeOffset = 0
 	sf.dataCenter = 0
@@ -90,33 +94,34 @@ func (this *SnowFlake) Next() int64 {
 	this.mu.Lock()
 	defer this.mu.Unlock()
 
-	var milliseconds = this.getMilliseconds()
-	if milliseconds < this.milliseconds {
+	var millisecond = this.getMillisecond()
+	if millisecond < this.millisecond {
 		return -1
 	}
 
-	if this.milliseconds == milliseconds {
+	if this.millisecond == millisecond {
 		this.sequence = (this.sequence + 1) & kMaxSequence
 		if this.sequence == 0 {
-			milliseconds = this.getNextMilliseconds()
+			millisecond = this.getNextMillisecond()
 		}
 	} else {
 		this.sequence = 0
 	}
-	this.milliseconds = milliseconds
-	var id = int64((milliseconds-this.timeOffset)<<kTimeShift | (this.dataCenter << kDataCenterShift) | (this.machine << kMachineShift) | (this.sequence))
+	this.millisecond = millisecond
+
+	var id = int64((millisecond-this.timeOffset)<<kTimeShift | (this.dataCenter << kDataCenterShift) | (this.machine << kMachineShift) | (this.sequence))
 	return id
 }
 
-func (this *SnowFlake) getNextMilliseconds() int64 {
-	var mill = this.getMilliseconds()
-	for mill < this.milliseconds {
-		mill = this.getMilliseconds()
+func (this *SnowFlake) getNextMillisecond() int64 {
+	var mill = this.getMillisecond()
+	for mill < this.millisecond {
+		mill = this.getMillisecond()
 	}
 	return mill
 }
 
-func (this *SnowFlake) getMilliseconds() int64 {
+func (this *SnowFlake) getMillisecond() int64 {
 	return time.Now().UnixNano() / 1e6
 }
 
