@@ -164,5 +164,10 @@ func Init(opts ...Option) (err error) {
 	once.Do(func() {
 		defaultSnowFlake, err = New(opts...)
 	})
+
+	if err != nil {
+		once = sync.Once{}
+	}
+
 	return err
 }
