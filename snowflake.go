@@ -150,8 +150,19 @@ func Sequence(s int64) int64 {
 }
 
 // --------------------------------------------------------------------------------
-var defaultSnowFlake, _ = New()
+var defaultSnowFlake *SnowFlake
+var once sync.Once
 
 func Next() int64 {
+	once.Do(func() {
+		defaultSnowFlake, _ = New()
+	})
 	return defaultSnowFlake.Next()
+}
+
+func Init(opts ...Option) (err error) {
+	once.Do(func() {
+		defaultSnowFlake, err = New(opts...)
+	})
+	return err
 }
