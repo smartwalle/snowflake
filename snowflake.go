@@ -24,6 +24,11 @@ const (
 	kMachineMask    = kMaxMachine << kSequenceBits
 )
 
+var (
+	ErrDataCenterNotAllowed = errors.New(fmt.Sprintf("data center can't be greater than %d or less than 0", kMaxDataCenter))
+	ErrWorkerNotAllowed     = errors.New(fmt.Sprintf("worker can't be greater than %d or less than 0", kMaxMachine))
+)
+
 // --------------------------------------------------------------------------------
 type Option interface {
 	Apply(*SnowFlake) error
@@ -38,7 +43,7 @@ func (f optionFunc) Apply(s *SnowFlake) error {
 func WithDataCenter(dataCenter int64) Option {
 	return optionFunc(func(s *SnowFlake) error {
 		if dataCenter < 0 || dataCenter > kMaxDataCenter {
-			return errors.New(fmt.Sprintf("data center can't be greater than %d or less than 0", kMaxDataCenter))
+			return ErrDataCenterNotAllowed
 		}
 		s.dataCenter = dataCenter
 		return nil
@@ -48,7 +53,7 @@ func WithDataCenter(dataCenter int64) Option {
 func WithMachine(machine int64) Option {
 	return optionFunc(func(s *SnowFlake) error {
 		if machine < 0 || machine > kMaxMachine {
-			return errors.New(fmt.Sprintf("worker can't be greater than %d or less than 0", kMaxMachine))
+			return ErrWorkerNotAllowed
 		}
 		s.machine = machine
 		return nil
