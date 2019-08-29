@@ -25,8 +25,8 @@ const (
 )
 
 var (
-	ErrDataCenterNotAllowed = errors.New(fmt.Sprintf("data center can't be greater than %d or less than 0", kMaxDataCenter))
-	ErrWorkerNotAllowed     = errors.New(fmt.Sprintf("worker can't be greater than %d or less than 0", kMaxMachine))
+	ErrDataCenterNotAllowed = errors.New(fmt.Sprintf("snowflake: data center can't be greater than %d or less than 0", kMaxDataCenter))
+	ErrWorkerNotAllowed     = errors.New(fmt.Sprintf("snowflake: worker can't be greater than %d or less than 0", kMaxMachine))
 )
 
 // --------------------------------------------------------------------------------
