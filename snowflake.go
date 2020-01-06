@@ -121,6 +121,11 @@ func (this *SnowFlake) Next() int64 {
 	return id
 }
 
+func (this *SnowFlake) NextString() string {
+	var nId = this.Next()
+	return fmt.Sprintf("%d", nId)
+}
+
 func (this *SnowFlake) getNextMillisecond() int64 {
 	var mill = this.getMillisecond()
 	for mill < this.millisecond {
@@ -163,6 +168,11 @@ func Next() int64 {
 		defaultSnowFlake, _ = New()
 	})
 	return defaultSnowFlake.Next()
+}
+
+func NextString() string {
+	var nId = Next()
+	return fmt.Sprintf("%d", nId)
 }
 
 func Init(opts ...Option) (err error) {
