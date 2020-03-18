@@ -40,6 +40,7 @@ func (f optionFunc) Apply(s *SnowFlake) error {
 	return f(s)
 }
 
+// WithDataCenter 设置数据中心标识
 func WithDataCenter(dataCenter int64) Option {
 	return optionFunc(func(s *SnowFlake) error {
 		if dataCenter < 0 || dataCenter > kMaxDataCenter {
@@ -50,6 +51,7 @@ func WithDataCenter(dataCenter int64) Option {
 	})
 }
 
+// WithMachine 设置机器标识
 func WithMachine(machine int64) Option {
 	return optionFunc(func(s *SnowFlake) error {
 		if machine < 0 || machine > kMaxMachine {
@@ -60,7 +62,7 @@ func WithMachine(machine int64) Option {
 	})
 }
 
-// WithTimeOffset offset 值为 millisecond
+// WithTimeOffset 设置时间偏移量
 func WithTimeOffset(t time.Time) Option {
 	return optionFunc(func(s *SnowFlake) error {
 		if t.IsZero() {
@@ -139,7 +141,7 @@ func (this *SnowFlake) getMillisecond() int64 {
 }
 
 // --------------------------------------------------------------------------------
-// Time 获取 id 的时间差值，单位是 millisecond
+// Time 获取 id 的时间，单位是 millisecond
 func Time(s int64) int64 {
 	return s >> kTimeShift
 }
