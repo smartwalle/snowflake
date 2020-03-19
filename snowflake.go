@@ -8,11 +8,11 @@ import (
 )
 
 const (
-	kSequenceBits   uint8 = 12 // 序列号占用的位数, 表示每个集群下的每个节点1毫秒内可生成的 id 序号的二进制位, 即每毫秒可生成 2^12-1=4096 个唯一 id
+	kSequenceBits   uint8 = 12 // 序列号占用的位数
 	kDataCenterBits uint8 = 5  // 数据中心占用的位数
 	kMachineBits    uint8 = 5  // 机器标识占用的位数
 
-	kMaxSequence   int64 = -1 ^ (-1 << kSequenceBits)   // 序列号最大值，用于防止溢出   0-4095
+	kMaxSequence   int64 = -1 ^ (-1 << kSequenceBits)   // 序列号最大值，用于防止溢出
 	kMaxDataCenter int64 = -1 ^ (-1 << kDataCenterBits) // 数据中心最大值，用于防止溢出 0-31
 	kMaxMachine    int64 = -1 ^ (-1 << kMachineBits)    // 机器标识最大值，用于防止溢出 0-31
 
@@ -29,7 +29,6 @@ var (
 	ErrWorkerNotAllowed     = errors.New(fmt.Sprintf("snowflake: worker can't be greater than %d or less than 0", kMaxMachine))
 )
 
-// --------------------------------------------------------------------------------
 type Option interface {
 	Apply(*SnowFlake) error
 }
@@ -73,13 +72,12 @@ func WithTimeOffset(t time.Time) Option {
 	})
 }
 
-// --------------------------------------------------------------------------------
 type SnowFlake struct {
 	mu          sync.Mutex
 	millisecond int64 // 上一次生成 id 的时间戳（毫秒）
 	dataCenter  int64 // 数据中心 id
 	machine     int64 // 机器标识 id
-	sequence    int64 // 当前毫秒已经生成的 id 序列号 (从0开始累加) 1毫秒内最多生成 4096 个 id
+	sequence    int64 // 当前毫秒已经生成的 id 序列号
 	timeOffset  int64
 }
 
@@ -140,7 +138,6 @@ func (this *SnowFlake) getMillisecond() int64 {
 	return time.Now().UnixNano() / 1e6
 }
 
-// --------------------------------------------------------------------------------
 // Time 获取 id 的时间，单位是 millisecond
 func Time(s int64) int64 {
 	return s >> kTimeShift
@@ -161,7 +158,6 @@ func Sequence(s int64) int64 {
 	return s & kMaxSequence
 }
 
-// --------------------------------------------------------------------------------
 var defaultSnowFlake *SnowFlake
 var once sync.Once
 
