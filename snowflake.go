@@ -117,7 +117,7 @@ func (this *SnowFlake) Next() int64 {
 	}
 	this.millisecond = millisecond
 
-	var id = int64((millisecond-this.timeOffset)<<kTimeShift | (this.dataCenter << kDataCenterShift) | (this.machine << kMachineShift) | (this.sequence))
+	var id = (millisecond-this.timeOffset)<<kTimeShift | (this.dataCenter << kDataCenterShift) | (this.machine << kMachineShift) | (this.sequence)
 	return id
 }
 
