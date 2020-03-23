@@ -100,10 +100,10 @@ func New(opts ...Option) (*SnowFlake, error) {
 
 func (this *SnowFlake) Next() int64 {
 	this.mu.Lock()
-	defer this.mu.Unlock()
 
 	var millisecond = this.getMillisecond()
 	if millisecond < this.millisecond {
+		this.mu.Unlock()
 		return -1
 	}
 
@@ -116,8 +116,10 @@ func (this *SnowFlake) Next() int64 {
 		this.sequence = 0
 	}
 	this.millisecond = millisecond
+	var sequence = this.sequence
+	this.mu.Unlock()
 
-	var id = (millisecond-this.timeOffset)<<kTimeShift | (this.dataCenter << kDataCenterShift) | (this.machine << kMachineShift) | (this.sequence)
+	var id = (millisecond-this.timeOffset)<<kTimeShift | (this.dataCenter << kDataCenterShift) | (this.machine << kMachineShift) | (sequence)
 	return id
 }
 
